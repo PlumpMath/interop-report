@@ -12,6 +12,11 @@
     "q": "~0.9.7",
     "request": "~2.27.0",
     "handlebars": "~1.0.12",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "express": "~3.4.3",
+    "mysql": "~2.0.0-alpha9",
+    "emailjs": "~0.3.6",
+    "nodemailer": "~0.5.3",
+    "juice": "~0.4.0"
   }
 }

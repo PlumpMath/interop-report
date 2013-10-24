@@ -3,7 +3,40 @@ var Handlebars = require('handlebars'),
     fs = require('fs'),
     request = require('request')
     _ = require('underscore'),
+    http = require('http'),
+    express = require('express'),
     Q = require('q');
+    var mysql      = require('mysql');
+	var db_config = {
+	  host     : 'dummy.amazonaws.com',
+	  user     : 'root',
+	  password : 'dummy',
+	  database : 'dummy'
+	};
+	var juice = require('juice');
+	
+
+var nodemailer = require("nodemailer");
+var transport = nodemailer.createTransport("SMTP", {
+    host: "smtp.gmail.com", // hostname
+    secureConnection: true, // use SSL
+    port: 465, // port for secure SMTP
+    auth: {
+        user: "sebastian.gramano@mulesoft.com",
+        pass: "dummy"
+    }
+});
+
+
+var app = express();
+
+//app.set('port', process.env.PORT || 9000);
+app.use(express.favicon());
+app.use(express.logger('dev'));
+//app.use(express.bodyParser());
+app.use(express.methodOverride());
+//app.use(express.static(__dirname + '/static'));
+
 
 
 var partialsDir = __dirname + '/partials';
@@ -21,55 +54,87 @@ helpers.forEach(function (name) {
 
 var template = Handlebars.compile(fs.readFileSync('template.hbs', 'UTF8'));
 
-releaseTestResults().then(function (data) {
+app.get('/build', function (req, res) {
 
-	console.log(template({teams: data }));
+	var rlsId = req.query.rlsId
 
-}).fail(function (err) {
-	console.log(err);
+	teamsTestResults(rlsId, function(err,rows, fields){
+		
+		connection.end();
+
+		releaseTestResults(rlsId).then(function (data) {
+
+			res.set('Content-Type', 'text/html');
+
+			data.push(rows[0])
+
+			var htmlMessage = new Handlebars.SafeString(template({rls: data, teams: data[1] }));
+			//var htmlMessage = template({rls: data, teams: data[1] });
+			juice.juiceContent(htmlMessage,{url:'http://'},function(err, html) {
+
+				var mailOptions = {
+				    from: "some", // sender address
+				    to: "qa-leads@mulesoft.com",//"sebastian.gramano@mulesoft.com", // list of receivers
+				    subject: "Hello", // Subject line
+				    // text: texto, // plaintext body
+				    html: html // html body
+				}
+
+				// send mail with defined transport object
+				transport.sendMail(mailOptions, function(error, response){
+				    if(error){
+				        console.log(error);
+				    }else{
+				        console.log("Message sent: " + response.message);
+				    }
+				});
+				// res.send(new Buffer(html));
+
+			});
+
+
+
+// var mailOptions = {
+//     from: "some", // sender address
+//     to: "sebastian.gramano@mulesoft.com", // list of receivers
+//     subject: "Hello", // Subject line
+//     // text: "Hello world", // plaintext body
+//     html: inlinedcss // html body
+// }
+
+// // send mail with defined transport object
+// transport.sendMail(mailOptions, function(error, response){
+//     if(error){
+//         console.log(error);
+//     }else{
+//         console.log("Message sent: " + response.message);
+//     }
+// });
+
+
+			res.send(new Buffer(template({rls: data, teams: data[1] })));
+
+		}).fail(function (err) {
+			console.log(err);
+		});
+		
+	})
 });
 
+function teamsTestResults(rlsId, callback){
 
-function testCaseResultsPerTeam() {
-	var result = [];
+		
+		connection = mysql.createConnection(db_config);
+		connection.connect();
 
-	result.push({
-		name: 'API',
-		status: 'ok',
-		total: 10,
-		passed: 50,
-		failed: 5,
-		inProgress: 6,
-		notRun: 28
-	});
-	result.push({
-		name: 'Cloudhub',
-		status: 'ok',
-		total: 103,
-		passed: 54,
-		failed: 5,
-		inProgress: 6,
-		notRun: 28
-	});
-	result.push({
-		name: 'Connectors',
-		status: 'failed',
-		total: 10,
-		passed: 50,
-		failed: 5,
-		inProgress: 6,
-		notRun: 28
-	});
+		connection.query('call tcm.interopTeams('+rlsId+')', callback);
 
-
-	return result;
 }
 
-
-function releaseTestResults(){
+function releaseTestResults(rlsId){
 	var prequest = Q.denodeify(request);
 
-	return prequest('http://tcm-backend.cloudhub.io/metricsExecutedRls?rlsId=60', {json:true}).spread(function (response, body) {
+	return prequest('http://tcm-backend.cloudhub.io/metricsExecutedRls?rlsId=' + rlsId, {json:true}).spread(function (response, body) {
 		var results = [];
     
         if (response.statusCode == 200) {
@@ -100,3 +165,37 @@ function releaseTestResults(){
     	return results;
     });
 }
+
+
+
+
+
+console.log('Express running at 8080')
+app.listen(8080)
+
+
+
+
+// var email   = require("emailjs");
+// var server  = email.server.connect({
+//    user:    "sebastian.gramano", 
+//    password:"Ibanez17", 
+//    host:    "smtp.gmail.com", 
+//    ssl:     true
+// });
+
+			// console.log(htmlMessage)emailjs
+			// var message = {
+			//    text:    "i hope this works", 
+			//    from:    "InteropReports", 
+			//    to:      "sebastian.gramano@mulesoft.com",
+			//    // cc:      "else <else@gmail.com>",
+			//    subject: "testing emailjs",
+			//    attachment: 
+			//    [
+			//       {data:html, alternative:true}
+			//    ]
+			// };
+
+			// // send the message and get a callback with an error or details of the message that was sent
+			// server.send(message, function(err, message) { console.log("Email Sent.") });

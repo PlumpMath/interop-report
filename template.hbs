@@ -2,8 +2,217 @@
 <head>
 	<title>Test Report</title>
 </head>
+<style>
+	body {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		width:650px;
+	}
+	.label {
+		width: 40px;
+    	display: inline;
+		padding: .2em .6em .3em;
+		/*font-size: 75%;*/
+		line-height: 1px;
+		color: black;
+		text-align: center;
+		white-space: nowrap;
+		vertical-align: baseline;
+		border-radius: .25em;
+		background-color: #999999;
+  	}
+
+  	.label-primary {
+		background-color: #428bca;
+	}
+	.label-success {
+	background-color: #5cb85c;
+	}
+	.label-info {
+	background-color: #5bc0de;
+	}
+	.label-warning {
+	background-color: #f0ad4e;
+	}
+	.label-danger {
+	background-color: #d9534f;
+	}
+	.label-inverse {
+	background-color: #000;
+	color: #fff;
+	}
+
+	#overal {
+		position:relative;width: 190px; height: 178px; border: 1px solid rgb(212, 212, 212);margin-bottom: 20px; border-radius: 3px;
+	}
+
+	#overal div {
+		height: 16%;border-bottom: 1px dashed #ccc;	position: relative;	line-height: 2;	padding-left: 10px;	font-size: 16px;
+	}
+
+	#overal div .te {
+		width: 120px;
+		height: 100%;
+	}
+
+	#overal div div {
+		display: inline-block;
+	}
+
+/*	#overal .value {
+		position: absolute;	right: 4px;	top: 2px;	font-size: 16px;
+	}*/
+
+	.odd {
+	background: #f7f7f7;
+	}
+	.even {
+	background: #efefef;
+	}
+	.progress {
+		max-height: 20px;
+		overflow: hidden;
+		background-color: #f7f7f7;
+		border-radius: 4px;
+		-webkit-box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
+		box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
+		width: 200px;
+	}
+	.bar {
+		/*float: left;*/
+		width: 0px;
+		height: 35px;
+		font-size: 12px;
+		color: #ffffff;
+		text-align: center;
+		-webkit-box-shadow: inset 0px -1px 0 rgba(0, 0, 0, 0.15);
+		box-shadow: inset 0px -1px 0 rgba(0, 0, 0, 0.15);
+	}
+	.bar-danger {
+		background-color: #d9534f;
+	}
+	.bar-warning {
+		background-color: #f0ad4e;
+	}
+	.bar-success {
+		background-color: #5cb85c;
+	}
+	.bar-info {
+		background-color: #5bc0de;
+	}
+	
+	.status-light {
+		width: 20px;
+		height: 20px;
+		border-radius: 10px;
+		border: 1px solid #ccc;
+	}
+	.status-light.success {
+		background-color: #5cb85c;
+	}
+	.status-light.warning {
+		background-color: #f0ad4e;
+	}
+	.status-light.danger {
+		background-color: #d9534f;
+	}
+	.overview {
+		width: 650px;
+		position: relative;
+	}
+	.overview-item {
+		height: 23px;
+		position: relative;
+		padding-top: 6px;
+		border-bottom: 1px dashed #ccc;
+		padding-bottom: 4px;
+	}
+	.overview-item div{
+		display:inline-block;
+	}
+	.overview-item .name {
+		margin-left: 12px;
+		position: relative;
+		top: -5;
+		font-size: 20px;
+		width: 137px;
+	}
+
+	.overview .rls .overview-item {
+		height:33px;
+	}
+
+	.overview .rls .overview-item .name{
+		font-size: 31px;
+	}
+
+	.overview .rls .overview-item .progress{
+		max-height: 30px;
+		min-height: 30px;
+	}
+
+	.overview .rls .overview-item .status-light{
+		height: 30px;
+		width: 30px;
+		border-radius: 20px;
+	}
+	.teams .overview-item {
+		padding-left: 6px;
+	}
+
+	.overview .summary-module {
+		width: 200px;
+	margin-left: 29px;
+	}
+	.inli {
+		display:inline-block;
+	}
+
+	.teams-summary .summary-module {
+		display: inline-table;
+		margin-left: 78px;
+	}
+
+	.summary-module .name {
+		text-align: center;
+		font-size: 25px;
+	}
+</style>
 	<body>
+		<p>
+		So far I have this, one of the main issues is that Email clients strip out the CSS so I have to inline it all and also many CSS rules don't beehive in the same way as in a browser. the good news is that all the info you're seing is being retrived automatically from the DB, I've made a NodeJs app that generates this email and also send it. so, I'm close.
+		<p>
+		<p>
+		Things that I need to work on:
+			<ul>
+				<li><p> TCM side in order to populate Risk field, status light and the Jira JQL</p></li>
+				<li><p> finish CSS issues with the email</p></li>
+			</ul>
+		<p>
+
+		<p>I know that there is too much color on things so I'm working on ot dont worry<p>
+
+		<div class="overview">
+			<div class="over-bars inli">
+				<div class="rls">
+					{{#with rls.[0]}}
+						{{>overview}}
+					{{/with}}
+					
+				</div>
+				<div class="teams">
+					{{#each rls.[1]}}
+						{{>overview}}
+					{{/each}}
+				</div>
+			</div>
+			{{#with rls.[0]}}
+				{{>releaseSummary}}
+			{{/with}}
+		</div>
 		<div class="summary">
+		</div>
+		<div style=" width: 650px; border: 1px dashed #ccc; "></div>
+		<div class="teams-summary">
 			{{#each teams}}
 				{{>teamSummary}}
 			{{/each}}

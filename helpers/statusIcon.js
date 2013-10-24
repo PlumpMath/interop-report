@@ -1,5 +1,5 @@
 var Handlebars = require('handlebars');
 
-module.exports = function () {
-	return new Handlebars.SafeString('<span class="status-ok">');	
+module.exports = function (data) {
+	return new Handlebars.SafeString('<div class="status-light success"></div>');	
 };
